@@ -4,22 +4,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Metronome</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Metronome</title>
+    <style>
+        #controls-wrapper {
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-direction: column;
+            width: 393px;
+            height: 786px;
+            border-radius: 73px;
+            background-color: rgba(227, 230, 236, 1);
+            padding: 17px;
+        }
+
+        #screen {
+            width: 353px;
+            height: 453px;
+            background: rgba(183, 192, 163, 1);
+            border-radius: 53px;
+            margin-bottom: 50px;
+            padding: 17px;
+            position: relative;
+            box-shadow: 8.72px 6.97px 9.88px 0px rgba(118, 126, 100, 1) inset;
+        }
+
+        label[for="tempo-slider"] {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 71.67px;
+            font-weight: 400;
+            line-height: 100.79px;
+            text-align: left;
+        }
+
+        #tempo-value {
+            font-size: 158px;
+            font-family: Arial, Helvetica, sans-serif;
+            position: absolute;
+            bottom: 10px;
+            left: 20px;
+        }
+
+        #tempo-slider {
+            width: 353px;
+            height: 1.75px;
+            border-radius: 88.5px 0px 0px 0px;
+            border: 1px 0px 0px 0px;
+            -webkit-appearance: none;
+            background-color: #000;
+            border-radius: 1px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 30px;
+            height: 30px;
+            background: #000;
+            border-radius: 50%;
+            cursor: -moz-grab;
+            cursor: -webkit-grab;
+        }
+
+        #toggle-button {
+            width: 104.62px;
+            height: 104.62px;
+            top: 637px;
+            left: 143.69px;
+            gap: 0px;
+            border-radius: 700px;
+            cursor: pointer;
+            margin-top: 100px;
+            background: linear-gradient(153.05deg, #F4B713 7.02%, #E4A600 90.45%);
+            border: 0;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Web Metronome</h1>
-        <div class="controls">
-            <label for="bpm">BPM: </label>
-            <input type="number" id="bpm" value="60" min="30" max="300">
-            <input type="range" id="bpm-slider" value="60" min="30" max="300">
-            <button id="start-stop">Start</button>
+    <div id="controls-wrapper">
+        <div id="controls">
+            <div id="screen">
+                <label for="tempo-slider">BPM</label>
+                <span id="tempo-value">120</span>
+            </div>
+            <input type="range" id="tempo-slider" min="40" max="240" value="120">
+            <button id="toggle-button"></button>
         </div>
-        <audio id="tick-sound" src="tick.wav" preload="auto"></audio>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        let audioContext;
+        let source;
+        let intervalId;
+        let tempo = 120;
+        let clickBuffer;
+        let isPlaying = false;
+
+        // Path to your custom sound file
+        const soundFilePath = '/tick.wav';
+
+        document.getElementById('tempo-slider').addEventListener('input', (event) => {
+            tempo = event.target.value;
+            document.getElementById('tempo-value').textContent = tempo;
+            if (intervalId) {
+                clearInterval(intervalId);
+                startMetronome();
+            }
+        });
+
+        document.getElementById('toggle-button').addEventListener('click', () => {
+            if (!audioContext) {
+                // Create an AudioContext if it doesn't already exist
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (isPlaying) {
+                stopMetronome();
+            } else {
+                startMetronome();
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // Load the custom sound file when the page loads
+        window.addEventListener('load', () => {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            fetch(soundFilePath)
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+                .then(buffer => {
+                    clickBuffer = buffer;
+                })
+                .catch(error => console.error('Error with fetching or decoding audio data:', error));
+        });
+
+        function startMetronome() {
+            const interval = (60 / tempo) * 1000;
+            intervalId = setInterval(() => {
+                if (source) {
+                    source.stop();
+                }
+                // Create a new buffer source each time
+                source = audioContext.createBufferSource();
+                source.buffer = clickBuffer;
+                source.connect(audioContext.destination);
+                source.start();
+            }, interval);
+        }
+
+        function stopMetronome() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            if (source) {
+                source.stop();
+                source = null;
+            }
+        }
+    </script>
 </body>
 
 </html>
