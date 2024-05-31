@@ -83,6 +83,7 @@
             margin-top: 100px;
             background: linear-gradient(153.05deg, #F4B713 7.02%, #E4A600 90.45%);
             border: 0;
+            font-size: 24px;
         }
     </style>
 </head>
@@ -95,7 +96,7 @@
                 <span id="tempo-value">120</span>
             </div>
             <input type="range" id="tempo-slider" min="40" max="240" value="120">
-            <button id="toggle-button"></button>
+            <button id="toggle-button">Start</button>
         </div>
     </div>
 
@@ -130,6 +131,7 @@
                 startMetronome();
             }
             isPlaying = !isPlaying;
+            document.getElementById('toggle-button').textContent = isPlaying ? 'Stop' : 'Start';
         });
 
         // Load the custom sound file when the page loads
