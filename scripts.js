@@ -5,7 +5,7 @@ let tempo = 120;
 let clickBuffer;
 let isPlaying = false;
 
-// Path to your custom sound file
+// path to sample
 const soundFilePath = "tick.wav";
 
 document.getElementById("tempo-slider").addEventListener("input", (event) => {
@@ -19,7 +19,6 @@ document.getElementById("tempo-slider").addEventListener("input", (event) => {
 
 document.getElementById("toggle-button").addEventListener("click", () => {
   if (!audioContext) {
-    // Create an AudioContext if it doesn't already exist
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
   }
   if (isPlaying) {
@@ -31,7 +30,6 @@ document.getElementById("toggle-button").addEventListener("click", () => {
   document.getElementById("toggle-button").textContent = isPlaying ? "Stop" : "Start";
 });
 
-// Load the custom sound file when the page loads
 window.addEventListener("load", () => {
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -51,7 +49,6 @@ function startMetronome() {
     if (source) {
       source.stop();
     }
-    // Create a new buffer source each time
     source = audioContext.createBufferSource();
     source.buffer = clickBuffer;
     source.connect(audioContext.destination);
